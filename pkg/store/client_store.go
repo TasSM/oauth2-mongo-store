@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 
 // custom mongodb oauth client store for go-oauth2
 // non exported client model as it is only required for internal implementation
-// implements oauth2.ClientStore
+// implements oauth2.ClientStore with additional operations for CRUD
 
-type CustomClientStorer interface {
+type OAuthClientStorer interface {
 	oauth2.ClientStore
 	Set(info oauth2.ClientInfo) error
 	RemoveByID(id string) error
