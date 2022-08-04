@@ -1,4 +1,4 @@
-package util
+package store_test
 
 import (
 	"context"
@@ -17,12 +17,17 @@ const (
 	mongo_test_pass = "test"
 )
 
-func ConnectLocalMongo() *mongo.Client {
+func connectLocalMongo() (*mongo.Client, func()) {
 	mongocs := fmt.Sprintf("mongodb://%s:%s@%s:%s/", mongo_test_user, mongo_test_pass, mongo_test_host, mongo_test_port)
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongocs))
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("connected to test mongo server: %s", mongocs)
-	return client
+	killfn := func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}
+	return client, killfn
 }
