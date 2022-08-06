@@ -1,7 +1,6 @@
 package store_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -43,7 +42,7 @@ func TestClientStore_SetReadDelete(t *testing.T) {
 	}
 
 	// read client
-	retrievedClient, err := cs.GetByID(context.TODO(), goodClient.UserID)
+	retrievedClient, err := cs.GetByID(goodClient.UserID)
 	if err != nil {
 		t.Errorf("failed to retrieve client by ClientID with error: %s", err.Error())
 	}
@@ -57,7 +56,7 @@ func TestClientStore_SetReadDelete(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to delete client with error: %s", err.Error())
 	}
-	_, err = cs.GetByID(context.TODO(), goodClient.UserID)
+	_, err = cs.GetByID(goodClient.UserID)
 	if !errors.Is(store.ErrorNoResult, err) {
 		t.Error("should not be able to retrieve client`")
 	}

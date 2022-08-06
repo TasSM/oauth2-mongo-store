@@ -3,7 +3,6 @@ module github.com/TasSM/oauth2-mongo-store
 go 1.17
 
 require (
-	github.com/go-oauth2/oauth2/v4 v4.5.1
 	go.mongodb.org/mongo-driver v1.10.0
 	gopkg.in/oauth2.v3 v3.12.0
 )
@@ -13,6 +12,7 @@ require (
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect

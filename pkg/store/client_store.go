@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-oauth2/oauth2/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/oauth2.v3"
 	"gopkg.in/oauth2.v3/models"
 )
 
@@ -58,10 +58,12 @@ func (cs *MongoClientStore) Set(info oauth2.ClientInfo) error {
 }
 
 // GetByID according to the ID for the client information
-func (cs *MongoClientStore) GetByID(ctx context.Context, id string) (oauth2.ClientInfo, error) {
+func (cs *MongoClientStore) GetByID(id string) (oauth2.ClientInfo, error) {
 	var cd client
 	var res models.Client
 	coll := cs.dbclient.Database(cs.database).Collection(cs.collection)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	err := coll.FindOne(ctx, bson.M{key_client_id: id}).Decode(&cd)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
