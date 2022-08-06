@@ -18,6 +18,12 @@ import (
 // custom mongodb oauth client store for go-oauth2
 // non exported client model as it is only required for internal implementation
 // implements oauth2.TokenStore
+const (
+	key_access_id  = "access_id"
+	key_code_id    = "code_id"
+	key_refresh_id = "refresh_id"
+	key_expired_at = "expired_at"
+)
 
 type MongoTokenStore struct {
 	dbclient   *mongo.Client
@@ -67,10 +73,10 @@ func (ts *MongoTokenStore) Create(info oauth2.TokenInfo) error {
 	token.Data = jv
 	indexes := []mongo.IndexModel{}
 	indexes = append(indexes, mongo.IndexModel{
-		Keys: bsonx.Doc{{Key: "access_id", Value: bsonx.Int32(1)}},
+		Keys: bsonx.Doc{{Key: key_access_id, Value: bsonx.Int32(1)}},
 	})
 	indexes = append(indexes, mongo.IndexModel{
-		Keys:    bsonx.Doc{{Key: "expired_at", Value: bsonx.Int32(1)}},
+		Keys:    bsonx.Doc{{Key: key_expired_at, Value: bsonx.Int32(1)}},
 		Options: options.Index().SetExpireAfterSeconds(int32(math.Round(info.GetAccessExpiresIn().Seconds()))),
 	})
 	_, err = coll.Indexes().CreateMany(ctx, indexes)
@@ -85,7 +91,7 @@ func (ts *MongoTokenStore) deleteTokenFor(key, value string) error {
 	coll := ts.dbclient.Database(ts.database).Collection(ts.collection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err := coll.DeleteOne(ctx, bson.D{{key, value}})
+	_, err := coll.DeleteOne(ctx, bson.M{key: value})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil
@@ -95,15 +101,15 @@ func (ts *MongoTokenStore) deleteTokenFor(key, value string) error {
 }
 
 func (ts *MongoTokenStore) RemoveByCode(code string) error {
-	return ts.deleteTokenFor("code_id", code)
+	return ts.deleteTokenFor(key_code_id, code)
 }
 
 func (ts *MongoTokenStore) RemoveByRefresh(refresh string) error {
-	return ts.deleteTokenFor("refresh_id", refresh)
+	return ts.deleteTokenFor(key_refresh_id, refresh)
 }
 
 func (ts *MongoTokenStore) RemoveByAccess(access string) error {
-	return ts.deleteTokenFor("access_id", access)
+	return ts.deleteTokenFor(key_access_id, access)
 }
 
 func (ts *MongoTokenStore) getTokenDataFor(key, val string) (oauth2.TokenInfo, error) {
@@ -112,7 +118,7 @@ func (ts *MongoTokenStore) getTokenDataFor(key, val string) (oauth2.TokenInfo, e
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	coll := ts.dbclient.Database(ts.database).Collection(ts.collection)
-	err := coll.FindOne(ctx, bson.D{{key, val}}).Decode(&td)
+	err := coll.FindOne(ctx, bson.M{key: val}).Decode(&td)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrorNoResult
@@ -124,13 +130,13 @@ func (ts *MongoTokenStore) getTokenDataFor(key, val string) (oauth2.TokenInfo, e
 }
 
 func (ts *MongoTokenStore) GetByCode(code string) (oauth2.TokenInfo, error) {
-	return ts.getTokenDataFor("code_id", code)
+	return ts.getTokenDataFor(key_code_id, code)
 }
 
 func (ts *MongoTokenStore) GetByAccess(access string) (oauth2.TokenInfo, error) {
-	return ts.getTokenDataFor("access_id", access)
+	return ts.getTokenDataFor(key_access_id, access)
 }
 
 func (ts *MongoTokenStore) GetByRefresh(refresh string) (oauth2.TokenInfo, error) {
-	return ts.getTokenDataFor("refresh_id", refresh)
+	return ts.getTokenDataFor(key_refresh_id, refresh)
 }

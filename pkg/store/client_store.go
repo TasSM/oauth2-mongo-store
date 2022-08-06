@@ -15,6 +15,10 @@ import (
 // non exported client model as it is only required for internal implementation
 // implements oauth2.ClientStore with additional operations for CRUD
 
+const (
+	key_client_id = "user_id"
+)
+
 type OAuthClientStorer interface {
 	oauth2.ClientStore
 	Set(info oauth2.ClientInfo) error
@@ -44,7 +48,7 @@ func (cs *MongoClientStore) Set(info oauth2.ClientInfo) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	data := client{
-		//ID:     info.GetID(),
+		// for now we will only allow generatedIds...
 		Secret: info.GetSecret(),
 		Domain: info.GetDomain(),
 		UserID: info.GetUserID(),
@@ -54,18 +58,24 @@ func (cs *MongoClientStore) Set(info oauth2.ClientInfo) error {
 }
 
 // GetByID according to the ID for the client information
-func (cs *MongoClientStore) GetByID(id string) (info oauth2.ClientInfo, err error) {
+func (cs *MongoClientStore) GetByID(id string) (oauth2.ClientInfo, error) {
+	var cd client
+	var res models.Client
 	coll := cs.dbclient.Database(cs.database).Collection(cs.collection)
-	res := models.Client{}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = coll.FindOne(ctx, bson.D{{"user_id", id}}).Decode(&res)
+	err := coll.FindOne(ctx, bson.M{key_client_id: id}).Decode(&cd)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrorNoResult
 		}
 		return nil, err
 	}
+	// doesn't seem right to expose this ID in the domain model
+	res.ID = cd.ID.String()
+	res.UserID = cd.UserID
+	res.Domain = cd.Domain
+	res.Secret = cd.Secret
 	return &res, nil
 }
 
@@ -74,7 +84,7 @@ func (ts *MongoClientStore) RemoveByID(id string) error {
 	coll := ts.dbclient.Database(ts.database).Collection(ts.collection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err := coll.DeleteOne(ctx, bson.D{{"user_id", id}})
+	_, err := coll.DeleteOne(ctx, bson.M{key_client_id: id})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil
