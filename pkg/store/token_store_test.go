@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TasSM/oauth2-mongo-store/pkg/store"
+	"github.com/tassm/oauth2-mongo-store/pkg/store"
 	"gopkg.in/oauth2.v3"
 	"gopkg.in/oauth2.v3/models"
 )

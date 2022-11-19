@@ -6,7 +6,7 @@ Tokens are clients are each stored in a dedicated collection, the database name 
 ## Install
 
 ``` bash
-$ go get -u -v github.com/TasSM/oauth2-mongo-store/
+$ go get -u -v github.com/tassm/oauth2-mongo-store/
 ```
 
 ## Usage

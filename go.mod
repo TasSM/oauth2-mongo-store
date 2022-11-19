@@ -1,4 +1,4 @@
-module github.com/TasSM/oauth2-mongo-store
+module github.com/tassm/oauth2-mongo-store
 
 go 1.17
 
